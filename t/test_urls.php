@@ -103,11 +103,11 @@ class GP_Test_Urls extends GP_UnitTestCase {
 	}
 		
 	function test_gp_url_join_should_accept_array_component_with_one_element_and_return_this_element() {
-		$this->assertEquals( 'baba', gp_url_join( array( 'baba' ) ));
+		$this->assertEquals( 'baba', gp_url_join( array( 'baba' ) ) );
 	}
 	
 	function test_gp_url_join_should_join_array_component_values_as_if_they_were_given_as_different_arguments() {
-		$this->assertEquals( 'baba/dyado', gp_url_join( array( 'baba', 'dyado' ) ));
+		$this->assertEquals( 'baba/dyado', gp_url_join( array( 'baba', 'dyado' ) ) );
 	}
 	
 	function test_gp_url_join_should_flatten_nested_arrays() {
@@ -116,6 +116,10 @@ class GP_Test_Urls extends GP_UnitTestCase {
 	
 	function test_gp_url_join_should_return_empty_string_with_nested_empty_arrays() {
 		$this->assertEquals( '', gp_url_join( array( array() ), array() ) );
+	}
+	
+	function test_gp_url_join_should_not_break_http() {
+		$this->assertEquals( 'http://dir.bg/baba', gp_url_join( 'http://dir.bg/', 'baba' ) );
 	}
 	
 	function test_gp_url_project_should_join_its_arguments() {

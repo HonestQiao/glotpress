@@ -1,27 +1,42 @@
 <?php
 
-class GP_Format_Android {
+class GP_Format_ResX {
 	
-	var $extension = 'xml';
+	var $extension = 'resx.xml';
 	
 	var $exported = '';
 	
 	function line( $string, $prepend_tabs = 0 ) {
 		$this->exported .= str_repeat( "\t", $prepend_tabs ) . "$string\n";
 	}
+	
+	function res_header( $name, $value ) {
+		$this->line( '<resheader name="'.$name.'">', 1 );
+		$this->line( '<value>'.$value.'</value>', 2 );
+		$this->line( '</resheader>', 1 );		
+	}
 		
 	function print_exported_file( $project, $locale, $translation_set, $entries ) {
 		$this->exported = '';
 		$this->line( '<?xml version="1.0" encoding="utf-8"?>' );
-		$this->line( '<resources>' );
+		$this->line( '<root>' );
+		$this->res_header( 'resmimetype', 'text/microsoft-resx' );
+		$this->res_header( 'version', '2.0' );
+		$this->res_header( 'reader', 'System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' );
+		$this->res_header( 'writer', 'System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089' );
 		foreach( $entries as $entry ) {
 			if ( !preg_match( '/^[a-zA-Z0-9_]+$/', $entry->context ) ) {
-				error_log( 'Android XML Export: Bad Entry: '. $entry->context );
+				error_log( 'ResX Export: Bad Entry: '. $entry->context );
 				continue;
 			}
-			$this->line( '<string name="' . $entry->context . '">' . $this->escape( $entry->translations[0] ) . '</string>', 1 );
+			$this->line( '<data name="' . $entry->context . '" xml:space="preserve">', 1 );
+			$this->line( '<value>' . $this->escape( $entry->translations[0] ) . '</value>', 2 );
+			if ( isset( $entry->extracted_comments ) && $entry->extracted_comments ) {
+				$this->line( '<comment>' . $this->escape( $entry->extracted_comments ) . '</comment>', 2 );
+			}
+			$this->line( '</data>', 1 );
 		}
-		$this->line( '</resources>' );
+		$this->line( '</root>' );
 		return $this->exported;
 	}
 	
@@ -59,10 +74,16 @@ class GP_Format_Android {
 		libxml_use_internal_errors( $errors );
 		if ( !is_object( $data ) ) return false;
 		$entries = new Translations;
-		foreach( $data->string as $string ) {
+		foreach( $data->data as $string ) {
 			$entry = new Translation_Entry();
+			if ( isset( $string['type'] ) && gp_in( 'System.Resources.ResXFileRef', (string)$string['type'] ) ) {
+				continue;
+			}
 			$entry->context = (string)$string['name'];
-			$entry->singular = $this->unescape( (string)$string[0] );
+			$entry->singular = $this->unescape( (string)$string->value );
+			if ( isset( $string->comment ) && $string->comment ) {
+				$entry->extracted_comments = (string)$string->comment;
+			}
 			$entry->translations = array();
 			$entries->add_entry( $entry );
 		}
@@ -71,14 +92,13 @@ class GP_Format_Android {
 
 	
 	function unescape( $string ) {
-		return stripcslashes( $string );		
+		return $string;
 	}
 	
 	function escape( $string ) {
-		$string = addcslashes( $string, "'\n");
 		$string = str_replace( array( '&', '<' ), array( '&amp;', '&lt;' ), $string );
 		return $string;
 	}
 }
 
-GP::$formats['android'] = new GP_Format_Android;
+GP::$formats['resx'] = new GP_Format_ResX;

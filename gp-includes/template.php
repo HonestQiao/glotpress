@@ -7,6 +7,8 @@ function gp_tmpl_load( $template, $args = array(), $template_path = null ) {
 	if ( !is_null( $template_path ) ) {
 		array_unshift( $locations, untrailingslashit( $template_path ) . '/' );
 	}
+	if ( isset( $args['http_status'] ) )
+		status_header( $args['http_status'] );
 	foreach( $locations as $location ) {
 	 	$file = $location . "$template.php";	
 		if ( is_readable( $file ) ) {
@@ -28,8 +30,6 @@ function gp_tmpl_get_output() {
 }
 
 function gp_tmpl_header( $args = array( ) ) {
-	if ( isset( $args['http_status'] ) )
-		status_header( $args['http_status'] );
 	gp_tmpl_load( 'header', $args );
 }
 
@@ -64,22 +64,41 @@ function gp_tmpl_404( $args = array()) {
 
 function gp_title( $title = null ) {
 	if ( !is_null( $title ) )
-		add_filter( 'gp_title', create_function( '$x', 'return '.var_export($title, true).';'), 5 );
+		add_filter( 'gp_title', lambda( '$x', '$title', compact( 'title' ) ), 5 );
 	else
 		return apply_filters( 'gp_title', '' );
 }
 
-function gp_breadcrumb( $breadcrumb = null ) {
+function gp_breadcrumb( $breadcrumb = null, $args = array() ) {
+	$defaults = array(
+		/* translators: separates links in the navigation breadcrumb */
+		'separator' => '<span class="separator">'._x('&rarr;', 'breadcrumb').'</span>',
+		'breadcrumb-template' => '<span class="breadcrumb">{separator}{breadcrumb}</span>',
+	);
+	$args = array_merge( $defaults, $args );
 	if ( !is_null( $breadcrumb ) ) {
-		/* translators: separates links in the navigation breadcrumb */		
-		$separator = '<span class="separator">'._x('&rarr;', 'breadcrumb').'</span>';
-		$breadcrumb_string = '<span class="breadcrumb">'.$separator;
-		$breadcrumb_string .= implode( $separator, array_filter( $breadcrumb ) );
-		$breadcrumb_string .= '</span>';
-		add_filter( 'gp_breadcrumb', create_function( '$x', 'return '.var_export($breadcrumb_string, true).';'), 5 );
+		$breadcrumb = gp_array_flatten( $breadcrumb );
+		$breadcrumb_string = implode( $args['separator'], array_filter( $breadcrumb ) );
+		$whole_breadcrumb = str_replace( '{separator}', $args['separator'], $args['breadcrumb-template'] );
+		$whole_breadcrumb = str_replace( '{breadcrumb}', $breadcrumb_string, $whole_breadcrumb );
+		add_filter( 'gp_breadcrumb', lambda( '$x', '$whole_breadcrumb', compact( 'whole_breadcrumb' ) ), 5 );
 	} else {
 		return apply_filters( 'gp_breadcrumb', '' );
 	}
+}
+
+function gp_project_links_from_root( $leaf_project ) {
+	$links = array();
+	$path_from_root = array_reverse( $leaf_project->path_to_root() );
+	$links[] = empty( $path_from_root)? 'Projects' : gp_link_get( gp_url( '/projects' ), 'Projects' );
+	foreach( $path_from_root as $project ) {
+		$links[] = gp_link_project_get( $project, esc_html( $project->name ) );
+	}
+	return $links;
+}
+
+function gp_breadcrumb_project( $project ) {
+	return gp_breadcrumb( gp_project_links_from_root( $project ) );
 }
 
 function gp_js_focus_on( $html_id ) {
@@ -218,4 +237,31 @@ function gp_array_of_things_to_json( $array ) {
 function gp_array_of_array_of_things_to_json( $array ) {
 	$map_to_fields = create_function( '$array', 'return array_map( lambda( \'$thing\', \'$thing->fields();\' ), $array );' );
 	return json_encode( array_map( $map_to_fields, $array ) );
+}
+
+function gp_preferred_sans_serif_style_tag( $locale ) {
+	if ( $locale->preferred_sans_serif_font_family ) {
+		echo <<<HTML
+	<style type="text/css">
+		.foreign-text {
+			font-family: "$locale->preferred_sans_serif_font_family", inherit;
+		}
+	</style>
+
+HTML;
+	}
+}
+
+function gp_html_excerpt( $str, $count, $ellipsis = '&hellip;') {
+	$excerpt = trim( wp_html_excerpt( $str, $count ) );
+	if ( $str != $excerpt ) {
+		$excerpt .= $ellipsis;
+	}
+	return $excerpt;
+}
+
+function gp_checked( $checked ) {
+	if ( $checked ) {
+		echo 'checked="checked"';
+	}
 }

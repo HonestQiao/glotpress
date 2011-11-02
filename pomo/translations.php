@@ -29,6 +29,19 @@ class Translations {
 		$this->entries[$key] = &$entry;
 		return true;
 	}
+	
+	function add_entry_or_merge($entry) {
+		if (is_array($entry)) {
+			$entry = new Translation_Entry($entry);
+		}
+		$key = $entry->key();
+		if (false === $key) return false;
+		if (isset($this->entries[$key]))
+			$this->entries[$key]->merge_with($entry);
+		else
+			$this->entries[$key] = &$entry;
+		return true;
+	}
 
 	/**
 	 * Sets $header PO header to $value
@@ -106,6 +119,15 @@ class Translations {
 	function merge_with(&$other) {
 		foreach( $other->entries as $entry ) {
 			$this->entries[$entry->key()] = $entry;
+		}
+	}
+	
+	function merge_originals_with(&$other) {
+		foreach( $other->entries as $entry ) {
+			if ( !isset( $this->entries[$entry->key()] ) )
+				$this->entries[$entry->key()] = $entry;
+			else
+				$this->entries[$entry->key()]->merge_with($entry);
 		}
 	}
 }

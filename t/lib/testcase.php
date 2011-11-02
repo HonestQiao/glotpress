@@ -19,8 +19,12 @@ class GP_UnitTestCase extends PHPUnit_Framework_TestCase {
 			$gpdb->query( 'DROP DATABASE '.GPDB_NAME.";" );
 			$gpdb->query( 'CREATE DATABASE '.GPDB_NAME.";" );
 			$gpdb->select( GPDB_NAME, $gpdb->dbh );
-			add_filter( 'gp_schema_pre_charset', array( &$this, 'force_innodb' ) );
-			gp_install();
+			$gpdb->query( 'SET storage_engine = INNODB;' );
+			$errors = gp_install();
+			if ( $errors ) {
+				gp_error_log_dump($errors);
+				die();
+			}
 			define( 'GP_IS_TEST_DB_INSTALLED', true );
 		}
 		$this->factory = new GP_UnitTest_Factory;
@@ -44,6 +48,11 @@ class GP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$locales->locales = array();
 		$_GET = array();
 		$_POST = array();
+		/**
+		 * @todo re-initialize all thing objects
+		 */
+		GP::$translation_set = new GP_Translation_Set;
+		GP::$original = new GP_Original;
 	}
 	
 	function start_transaction() {
@@ -51,13 +60,6 @@ class GP_UnitTestCase extends PHPUnit_Framework_TestCase {
 		$gpdb->query( 'SET autocommit = 0;' );
 		$gpdb->query( 'SET SESSION TRANSACTION ISOLATION LEVEL SERIALIZABLE;' );
 		$gpdb->query( 'START TRANSACTION;' );		
-	}
-
-	function force_innodb( $schema ) {
-		foreach( $schema as &$sql ) {
-			$sql = str_replace( ');', ') TYPE=InnoDB;', $sql );
-		}
-		return $schema;
 	}
 
 	function temp_filename() {

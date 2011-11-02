@@ -11,20 +11,21 @@ class GP_UnitTest_Factory {
 }
 
 class GP_UnitTest_Factory_For_Project extends GP_UnitTest_Factory_For_Thing {
-	function __construct( $factory = null ) {
-		parent::__construct( $factory, new GP_Project );
+	function __construct( $factory = null, $thing = null ) {
+		parent::__construct( $factory, $thing? $thing : new GP_Project );
 		$this->default_generation_definitions = array(
 			'name' => new GP_UnitTest_Generator_Sequence( 'Project %s' ),
 			'description' => 'I am a project',
 			'parent_project_id' => null,
 			'slug' => false,
+			'active' => 0,
 		);
 	}
 }
 
 class GP_UnitTest_Factory_For_User extends GP_UnitTest_Factory_For_Thing {
-	function __construct( $factory = null ) {
-		parent::__construct( $factory, new GP_User );
+	function __construct( $factory = null, $thing = null ) {
+		parent::__construct( $factory, $thing? $thing : new GP_User );
 		$this->default_generation_definitions = array(
 			'user_login' => new GP_UnitTest_Generator_Sequence( 'User %s' ),
 			'user_pass' => 'a',
@@ -41,28 +42,29 @@ class GP_UnitTest_Factory_For_User extends GP_UnitTest_Factory_For_Thing {
 
 
 class GP_UnitTest_Factory_For_Translation_Set extends GP_UnitTest_Factory_For_Thing {
-	function __construct( $factory = null ) {
-		parent::__construct( $factory, new GP_Translation_Set );
+	function __construct( $factory = null, $thing = null ) {
+		parent::__construct( $factory, $thing? $thing : new GP_Translation_Set );
 		$this->default_generation_definitions = array(
 			'name' => new GP_UnitTest_Generator_Sequence( 'Translation Set %s' ),
 			'slug' => 'default',
 			'locale' => new GP_UnitTest_Generator_Locale_Name,
+			'project_id' => 1,
 		);
 	}
-	
+
 	function create_with_project_and_locale( $args = array(), $project_args = array() ) {
 		$locale = $this->factory->locale->create();
 		$project = $this->factory->project->create( $project_args );
 		$set = $this->create( array( 'project_id' => $project->id, 'locale' => $locale->slug ) + $args );
 		$set->project = $project;
-		$set->locale = $locale;
+		$set->locale = $locale->slug;
 		return $set;
 	}
 }
 
 class GP_UnitTest_Factory_For_Original extends GP_UnitTest_Factory_For_Thing {
-	function __construct( $factory = null ) {
-		parent::__construct( $factory, new GP_Original );
+	function __construct( $factory = null, $thing = null ) {
+		parent::__construct( $factory, $thing? $thing : $thing? $thing : new GP_Original );
 		$this->default_generation_definitions = array(
 			'singular' => new GP_UnitTest_Generator_Sequence( 'Original %s' ),
 		);
@@ -70,17 +72,25 @@ class GP_UnitTest_Factory_For_Original extends GP_UnitTest_Factory_For_Thing {
 }
 
 class GP_UnitTest_Factory_For_Translation extends GP_UnitTest_Factory_For_Thing {
-	function __construct( $factory = null ) {
-		parent::__construct( $factory, new GP_Translation );
+	function __construct( $factory = null, $thing = null ) {
+		parent::__construct( $factory, $thing? $thing : new GP_Translation );
 		$this->default_generation_definitions = array(
 			'translation_0' => new GP_UnitTest_Generator_Sequence( 'Translation %s' ),
 		);
 	}
+	
+	function create_with_original_for_translation_set( $set, $args = array() ) {
+		$original = $this->factory->original->create( array( 'project_id' => $set->project_id ) );
+		$translation = $this->create( array_merge( $args, array( 'original_id' => $original->id, 'translation_set_id' => $set->id ) ) );
+		$translation->original = $original;
+		$translation->translation_set = $set;
+		return $translation;
+	}
 }
 
 class GP_UnitTest_Factory_For_Locale extends GP_UnitTest_Factory_For_Thing {
-	function __construct( $factory = null ) {
-		$thing = (object)array( 'field_names' => array_keys( get_object_vars( new GP_Locale ) ) );
+	function __construct( $factory = null, $thing = null ) {
+		$thing = (object)array( 'field_names' => array_keys( get_object_vars( $thing? $thing : new GP_Locale ) ) );
 		parent::__construct( $factory, $thing );
 		$this->default_generation_definitions = array(
 			'slug' => new GP_UnitTest_Generator_Locale_Name,

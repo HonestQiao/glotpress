@@ -19,11 +19,11 @@ $priority_char = array(
 	<td class="original">
 		<?php echo prepare_original( esc_translation( $t->singular ) ); ?>
 		<?php if ( $t->context ): ?>
-		<span class="context" title="<?php printf( __('Context: %s'), esc_html($t->context) ); ?>"><?php echo esc_html($t->context); ?></span>
+		<span class="context bubble" title="<?php printf( __('Context: %s'), esc_html($t->context) ); ?>"><?php echo esc_html($t->context); ?></span>
 		<?php endif; ?>
 	
 	</td>
-	<td class="translation">
+	<td class="translation foreign-text">
 	<?php
 		$edit_text = $can_edit? __('Double-click to add') : sprintf(__('You <a href="%s">have to login</a> to add a translation.'), gp_url_login());
 		$missing_text = "<span class='missing'>$edit_text</span>";
@@ -109,7 +109,7 @@ $priority_char = array(
 			<?php if ( $t->context ): ?>
 			<dl>
 				<dt><?php _e('Context:'); ?></dt>
-				<dd><span class="context"><?php echo esc_translation($t->context); ?></span></dd>
+				<dd><span class="context bubble"><?php echo esc_translation($t->context); ?></span></dd>
 			</dl>
 			<?php endif; ?>
 			<?php if ( $t->extracted_comment ): ?>
@@ -145,10 +145,18 @@ $priority_char = array(
 			<?php $extra_args = $t->translation_status? array( 'filters[translation_id]' => $t->id ) : array(); ?>
 			<dl>
 <?php
-    $permalink = gp_url_project_locale( $project, $locale->slug, $translation_set->slug,
-        array_merge( array('filters[status]' => 'either', 'filters[original_id]' => $t->original_id ), $extra_args ) );
+		$permalink = gp_url_project_locale( $project, $locale->slug, $translation_set->slug,
+        	array_merge( array('filters[status]' => 'either', 'filters[original_id]' => $t->original_id ), $extra_args ) );
+		$original_history = gp_url_project_locale( $project, $locale->slug, $translation_set->slug,
+        	array_merge( array('filters[status]' => 'either', 'filters[original_id]' => $t->original_id, 'sort[by]' => 'translation_date_added', 'sort[how]' => 'asc' ) ) );
+
 ?>
-			    <dt><a tabindex="-1" href="<?php echo $permalink; ?>" title="Permanent link to this translation">&infin;</a></dt>
+			    <dt>More links:
+				<ul>
+					<li><a tabindex="-1" href="<?php echo $permalink; ?>" title="Permanent link to this translation">Permalink to this translation</a></li>
+					<li><a tabindex="-1" href="<?php echo $original_history; ?>" title="Link to the history of translations of this original">All translations of this original</a></li>
+				</ul>
+				</dt>
 			</dl>
 		</div>
 		<div class="actions">
@@ -157,7 +165,7 @@ $priority_char = array(
 				<?php echo $can_approve? __('Add translation &rarr;') : __('Suggest new translation &rarr;'); ?>
 			</button>
 		<?php endif; ?>
-			<a href="#" class="close"><?php _e('Cancel'); ?></a>
+			or <a href="#" class="close"><?php _e('Cancel'); ?></a>
 		</div>
 	</td>
 </tr>

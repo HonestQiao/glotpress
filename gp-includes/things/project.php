@@ -2,7 +2,7 @@
 class GP_Project extends GP_Thing {
 	
 	var $table_basename = 'projects';
-	var $field_names = array( 'id', 'name', 'slug', 'path', 'description', 'parent_project_id', 'source_url_template' );
+	var $field_names = array( 'id', 'name', 'slug', 'path', 'description', 'parent_project_id', 'source_url_template', 'active' );
 	var $non_updatable_attributes = array( 'id' );
 
 
@@ -17,7 +17,7 @@ class GP_Project extends GP_Thing {
 	}
 	
 	function sub_projects() {
-		return $this->many( "SELECT * FROM $this->table WHERE parent_project_id = %d ORDER BY name ASC", $this->id );
+		return $this->many( "SELECT * FROM $this->table WHERE parent_project_id = %d ORDER BY active DESC, id ASC", $this->id );
 	}
 	
 	function top_level() {
@@ -50,6 +50,10 @@ class GP_Project extends GP_Thing {
 		if ( ( isset( $args['path']) && !$args['path'] ) || !isset( $args['path'] ) || is_null( $args['path'] )) {
 			unset( $args['path'] );
 		}
+		if ( isset( $args['active'] ) ) {
+			if ( 'on' == $args['active'] ) $args['active'] = 1;
+			if ( !$args['active'] ) $args['active'] = 0;
+		}
 		return $args;
 	}
 
@@ -68,6 +72,7 @@ class GP_Project extends GP_Thing {
 			$path = $this->slug;
 		else
 			return null;
+		$this->path = $path;
 		$res_self = $this->update( array( 'path' => $path ) );
 		if ( is_null( $res_self ) ) return $res_self;
 		// update children's paths, too
@@ -119,6 +124,15 @@ class GP_Project extends GP_Thing {
 		}
 	}
 	
+	/**
+	 * Gives an array of project objects starting from the current project
+	 * then its parent, its parent and up to the root
+	 * 
+	 * @todo Cache the results. Invalidation is tricky, because on each project update we need to invalidate the cache
+	 * for all of its children.
+	 * 
+	 * @return array
+	 */
 	function path_to_root() {
 		$path = array();
 		if ( $this->parent_project_id ) {
@@ -146,6 +160,6 @@ class GP_Project extends GP_Thing {
 			}
 		}
 		return compact( 'added', 'removed' );
-	}
+	}	
 }
 GP::$project = new GP_Project();
