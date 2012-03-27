@@ -163,6 +163,15 @@ class GP_Locales {
 		$az->wp_locale = 'az';
 		$az->slug = 'az';
 		$az->google_code = 'az';
+		
+		$az_tr = new GP_Locale();
+		$az_tr->english_name = 'Azerbaijani (Turkey)';
+		$az_tr->native_name = 'Azərbaycan Türkcəsi';
+		$az_tr->lang_code_iso_639_1 = 'az';
+		$az_tr->lang_code_iso_639_2 = 'aze';
+		$az_tr->country_code = 'tr';
+		$az_tr->wp_locale = 'az_TR';
+		$az_tr->slug = 'az-tr';
 
 		$ba = new GP_Locale();
 		$ba->english_name = 'Bashkir';
@@ -307,6 +316,7 @@ class GP_Locales {
 		$co->lang_code_iso_639_1 = 'co';
 		$co->lang_code_iso_639_2 = 'cos';
 		$co->country_code = 'it';
+		$ckb->wp_locale = 'co';
 		$co->slug = 'co';
 
 		$cr = new GP_Locale();
@@ -392,6 +402,7 @@ class GP_Locales {
 		$dv->lang_code_iso_639_1 = 'dv';
 		$dv->lang_code_iso_639_1 = 'div';
 		$dv->country_code = 'mv';
+		$dv->wp_locale = 'dv';
 		$dv->slug = 'dv';
 		$dv->google_code = 'dv';
 		$dv->rtl = true;
@@ -441,6 +452,17 @@ class GP_Locales {
 		$en->slug = 'en';
 		$en->google_code = 'en';
 		
+		$en_ca = new GP_Locale();
+		$en_ca->english_name = 'English (Canada)';
+		$en_ca->native_name = 'English (Canada)';
+		$en_ca->lang_code_iso_639_1 = 'en';
+		$en_ca->lang_code_iso_639_2 = 'eng';		
+		$en_ca->lang_code_iso_639_3 = 'eng';
+		$en_ca->country_code = 'ca';
+		$en_ca->wp_locale = 'en_CA';
+		$en_ca->slug = 'en-ca';
+		$en_ca->google_code = 'en';
+				
 		$en_gb = new GP_Locale();
 		$en_gb->english_name = 'English (UK)';
 		$en_gb->native_name = 'English (UK)';
@@ -657,10 +679,11 @@ class GP_Locales {
 		$gd->lang_code_iso_639_2 = 'gla';
 		$gd->lang_code_iso_639_3 = 'gla';
 		$gd->country_code = 'uk';
+		$gd->wp_locale = 'gd';
 		$gd->slug = 'gd';
 		$gd->google_code = 'gd';
-		$gd->nplurals = 5;
-		$gd->plural_expression = 'n==1 ? 0 : n==2 ? 1 : n<7 ? 2 : n<11 ? 3 : 4';		
+		$gd->nplurals = 4;
+		$gd->plural_expression = '(n==1 || n==11) ? 0 : (n==2 || n==12) ? 1 : (n > 2 && n < 20) ? 2 : 3';		
 
 		$gl = new GP_Locale();
 		$gl->english_name = 'Galician';
@@ -1155,6 +1178,14 @@ class GP_Locales {
 		$oc->lang_code_iso_639_2 = 'oci';
 		$oc->country_code = '';
 		$oc->slug = 'oc';
+
+		$os = new GP_Locale();
+		$os->english_name = 'Ossetic';
+		$os->native_name = 'Ирон';
+		$os->lang_code_iso_639_1 = 'os';
+		$os->lang_code_iso_639_2 = 'oss';
+		$os->country_code = '';
+		$os->slug = 'os';
 		
 		$pa = new GP_Locale();
 		$pa->english_name = 'Punjabi';
@@ -1283,7 +1314,7 @@ class GP_Locales {
 		$sa_in->lang_code_iso_639_2 = 'san';
 		$sa_in->lang_code_iso_639_3 = 'san';
 		$sa_in->country_code = 'in';
-		$sa_in->wp_locale = 'sa-in';
+		$sa_in->wp_locale = 'sa_IN';
 		$sa_in->slug = 'sa-in';
 
 		$sd = new GP_Locale();
