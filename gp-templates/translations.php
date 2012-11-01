@@ -53,7 +53,7 @@ $i = 0;
 				__('Fuzzy') );
 		$filter_links[] = gp_link_get( add_query_arg( array('filters[warnings]' => 'yes', 'filters[status]' => 'current_or_waiting', 'sort[by]' => 'translation_date_added'), $url ),
 				__('Warnings') );
-	
+
 	}
 	// TODO: with warnings
 	// TODO: saved searches
@@ -78,7 +78,7 @@ $i = 0;
 					'old' => __('Approved, but obsoleted by another string'),
 					'waiting' => __('Waiting approval'),
 					'rejected' => __('Rejected'),
-					'untranslated' => __('Without current translation'),					
+					'untranslated' => __('Without current translation'),
 					'either' => __('Any'),
 				), gp_array_get( $filters, 'status', 'current_or_waiting_or_fuzzy_or_untranslated' ) );
 			?>
@@ -87,14 +87,23 @@ $i = 0;
 			<input type="checkbox" name="filters[with_comment]" value="yes" id="filters[with_comment][yes]" <?php gp_checked( 'yes' == gp_array_get( $filters, 'with_comment' ) ); ?>><label for='filters[with_comment][yes]'><?php _e( 'With comment' ); ?></label><br />
 			<input type="checkbox" name="filters[with_context]" value="yes" id="filters[with_context][yes]" <?php gp_checked( 'yes' == gp_array_get( $filters, 'with_context' ) ); ?>><label for='filters[with_context][yes]'><?php _e( 'With context' ); ?></label>
 		</dd>
-		
-		
+
+
 		<dd><input type="submit" value="<?php echo esc_attr(__('Filter')); ?>" name="filter" /></dd>
 	</dl>
 	<dl class="filters-expanded sort hidden clearfix">
 		<dt><?php _e('By:'); ?></dt>
 		<dd>
-		<?php echo gp_radio_buttons('sort[by]',
+		<?php
+		$default_sort = GP::$user->current()->get_meta('default_sort');
+		if ( ! is_array($default_sort) ) {
+			$default_sort = array(
+				'by' => 'priority',
+				'how' => 'desc'
+			);
+		}
+
+		echo gp_radio_buttons('sort[by]',
 			array(
 				'original_date_added' => __('Date added (original)'),
 				'translation_date_added' => __('Date added (translation)'),
@@ -103,16 +112,16 @@ $i = 0;
 				'priority' => __('Priority'),
 				'references' => __('Filename in source'),
 				'random' => __('Random'),
-			), gp_array_get( $sort, 'by', 'priority' ) );
+			), gp_array_get( $sort, 'by', $default_sort['by'] ) );
 		?>
 		</dd>
-		<dt><?php _e('How:'); ?></dt>
+		<dt><?php _e('Order:'); ?></dt>
 		<dd>
 		<?php echo gp_radio_buttons('sort[how]',
 			array(
 				'asc' => __('Ascending'),
 				'desc' => __('Descending'),
-			), gp_array_get( $sort, 'how', 'desc' ) );
+			), gp_array_get( $sort, 'how', $default_sort['how'] ) );
 		?>
 		</dd>
 		<dd><input type="submit" value="<?php echo esc_attr(__('Sort')); ?>" name="sorts" /></dd>
@@ -143,7 +152,7 @@ $i = 0;
 <?php echo gp_pagination( $page, $per_page, $total_translations_count ); ?>
 <div id="legend" class="secondary clearfix">
 	<div><strong><?php _e('Legend:'); ?></strong></div>
-<?php 
+<?php
 	foreach( GP::$translation->get_static( 'statuses' ) as $status ):
 		if ( 'rejected' == $status ) continue;
 ?>
@@ -162,12 +171,15 @@ $i = 0;
 		}
 		$export_url = gp_url_project( $project, array( $locale->slug, $translation_set->slug, 'export-translations' ) );
 		$export_link = gp_link_get( $export_url , __('Export'), array('id' => 'export', 'filters' => add_query_arg( array( 'filters' => $filters ), $export_url ) ) );
-		$format_slugs = array_keys( GP::$formats );
+		$format_options = array();
+		foreach ( GP::$formats as $slug => $format ) {
+			$format_options[$slug] = $format->name;
+		}
 		$what_dropdown = gp_select( 'what-to-export', array('all' => _x('all current', 'export choice'), 'filtered' => _x('only matching the filter', 'export choice')), 'all' );
-		$format_dropdown = gp_select( 'export-format', array_combine( $format_slugs, $format_slugs ), 'po' );
+		$format_dropdown = gp_select( 'export-format', $format_options, 'po' );
 		/* translators: 1: export 2: what to export dropdown (all/filtered) 3: export format */
 		$footer_links[] = sprintf( __('%1$s %2$s as %3$s'), $export_link, $what_dropdown, $format_dropdown );
-		
+
 		echo implode( ' &bull; ', apply_filters( 'translations_footer_links', $footer_links, $project, $locale, $translation_set ) );
 	?>
 </p>

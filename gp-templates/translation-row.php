@@ -8,6 +8,7 @@ $priority_char = array(
     '0' => array('', 'transparent', 'white'),
     '1' => array('&uarr;', 'transparent', 'green'),
 );
+$can_reject_self = (GP::$user->current()->user_login == $t->user_login && $t->translation_status == "waiting");
 ?>
 <tr class="preview <?php echo $parity().' '.$status_class.' '.$warning_class.' '.$priority_class ?>" id="preview-<?php echo $t->row_id ?>" row="<?php echo $t->row_id; ?>">
 	<?php if ( $can_approve ) : ?><th scope="row" class="checkbox"><input type="checkbox" name="selected-row[]" /></th><?php endif; ?>
@@ -22,7 +23,7 @@ $priority_char = array(
 		<?php if ( $t->context ): ?>
 		<span class="context bubble" title="<?php printf( __('Context: %s'), esc_html($t->context) ); ?>"><?php echo esc_html($t->context); ?></span>
 		<?php endif; ?>
-	
+
 	</td>
 	<td class="translation foreign-text">
 	<?php
@@ -82,20 +83,23 @@ $priority_char = array(
 			<?php endif; ?>
 		<?php endif; ?>
 		</div>
-		
+
 		<div class="meta">
 			<h3><?php _e('Meta'); ?></h3>
 			<dl>
 				<dt><?php _e('Status:'); ?></dt>
 				<dd>
 					<?php echo display_status( $t->translation_status ); ?>
-					<?php if ( $can_approve && $t->translation_status ): ?>
-					
-						<?php if ( $t->translation_status != 'current' ): ?>
-						<button class="approve" tabindex="-1"><strong>+</strong> Approve</button>
-						<?php endif; ?>
-						<?php if ( $t->translation_status != 'rejected' ): ?>
-						<button class="reject" tabindex="-1"><strong>&minus;</strong> Reject</button>
+					<?php if ( $t->translation_status ): ?>
+						<?php if ( $can_approve ): ?>
+							<?php if ( $t->translation_status != 'current' ): ?>
+							<button class="approve" tabindex="-1"><strong>+</strong> Approve</button>
+							<?php endif; ?>
+							<?php if ( $t->translation_status != 'rejected' ): ?>
+							<button class="reject" tabindex="-1"><strong>&minus;</strong> Reject</button>
+							<?php endif; ?>
+						<?php elseif ( $can_reject_self ): ?>
+							<button class="reject" tabindex="-1"><strong>&minus;</strong> Reject Suggestion</button>
 						<?php endif; ?>
 					<?php endif; ?>
 				</dd>
@@ -106,7 +110,7 @@ $priority_char = array(
 				<dd><?php echo esc_html($t->priority); ?></dd>
 			</dl>
 			-->
-			
+
 			<?php if ( $t->context ): ?>
 			<dl>
 				<dt><?php _e('Context:'); ?></dt>
@@ -128,12 +132,18 @@ $priority_char = array(
 			<?php if ( $t->user_login ): ?>
 			<dl>
 				<dt><?php _e('Translated by:'); ?></dt>
-				<dd><?php echo $t->user_login; ?></dd>
+				<dd><?php
+				if ( $t->user_display_name && $t->user_display_name != $t->user_login ) {
+					printf( '%s (%s)', $t->user_display_name, $t->user_login );
+				} else {
+					echo $t->user_login;
+				}
+				?></dd>
 			</dl>
 			<?php endif; ?>
-			
+
 			<?php references( $project, $t ); ?>
-			
+
 			<dl>
 			    <dt><?php _e('Priority of the original:'); ?></dt>
 			<?php if ( $can_write ): ?>
@@ -142,7 +152,7 @@ $priority_char = array(
 			    <dd><?php echo gp_array_get( GP::$original->get_static( 'priorities' ), $t->priority, 'unknown' ); ?></dd>
 			<?php endif; ?>
 			</dl>
-			
+
 			<?php $extra_args = $t->translation_status? array( 'filters[translation_id]' => $t->id ) : array(); ?>
 			<dl>
 <?php

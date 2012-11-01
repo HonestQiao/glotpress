@@ -9,7 +9,7 @@ function gp_styles_default( &$styles ) {
 	// TODO: get text direction for current locale
 	//$styles->text_direction = 'rtl' == get_bloginfo( 'text_direction' ) ? 'rtl' : 'ltr';
 	$styles->text_direction = 'ltr';
-	
+
 	$styles->add( 'base', '/style.css', array(), '20120410' );
 }
 
@@ -19,7 +19,7 @@ function gp_scripts_default( &$scripts ) {
 	$scripts->base_url = gp_url_base( 'js' );
 	$scripts->default_version = gp_get_option( 'version' );
 
-	$bump = '20120410';
+	$bump = '20120716';
 
 	$scripts->add( 'jquery', '/jquery/jquery.js', array(), '1.7.2' );
 	$scripts->add( 'jquery-ui', '/jquery/jquery-ui.js', array('jquery'), '1.8.18' );

@@ -12,7 +12,7 @@ gp_tmpl_header();
 	<pre>
 		<?php echo implode("\n", $errors); ?>
 	</pre>
-<?php 
+<?php
 	else:
 		echo $success_message;
 	endif;
@@ -37,5 +37,5 @@ if ( $show_htaccess_instructions ): ?>
 		<?php _e('<strong>The default username is <code>admin</code>, whose password is simply <code>a</code>.</strong>'); ?>
 	</p>
 <?php endif; ?>
-	
+
 <?php gp_tmpl_footer(); ?>

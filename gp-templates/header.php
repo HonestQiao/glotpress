@@ -19,11 +19,11 @@ wp_enqueue_script( 'jquery' );
 			</a>
 			<?php echo gp_breadcrumb(); ?>
 			<span id="hello">
-			<?php 
+			<?php
 			if (GP::$user->logged_in()):
 				$user = GP::$user->current();
-				
-				printf( __('Hi, %s.'), $user->user_login );
+
+				printf( __('Hi, %s.'), '<a href="'.gp_url( '/profile' ).'">'.$user->user_login.'</a>' );
 				?>
 				<a href="<?php echo gp_url('/logout')?>"><?php _e('Log out'); ?></a>
 			<?php else: ?>

@@ -72,9 +72,18 @@ class GP_Translation extends GP_Thing {
 		$sort_bys = array('original' => 'o.singular %s', 'translation' => 't.translation_0 %s', 'priority' => 'o.priority %s, o.date_added DESC',
 			'random' => 'o.priority DESC, RAND()', 'translation_date_added' => 't.date_added %s', 'original_date_added' => 'o.date_added %s',
 			'references' => 'o.references' );
-		$sort_by = gp_array_get( $sort_bys, gp_array_get( $sort, 'by' ), 'o.priority %1$s, o.date_added %1$s' );
+
+		$default_sort = GP::$user->current()->get_meta('default_sort');
+		if ( ! is_array($default_sort) ) {
+			$default_sort = array(
+				'by' => 'priority',
+				'how' => 'desc'
+			);
+		}
+
+		$sort_by = gp_array_get( $sort_bys, gp_array_get( $sort, 'by' ),  gp_array_get( $sort_bys, $default_sort['by'] ) );
 		$sort_hows = array('asc' => 'ASC', 'desc' => 'DESC', );
-		$sort_how = gp_array_get( $sort_hows, gp_array_get( $sort, 'how' ), 'DESC' );
+		$sort_how = gp_array_get( $sort_hows, gp_array_get( $sort, 'how' ), gp_array_get( $sort_hows, $default_sort['how'] ) );
 
 		$where = array();
 		if ( gp_array_get( $filters, 'term' ) ) {
@@ -123,7 +132,7 @@ class GP_Translation extends GP_Thing {
 			$join_where[] = 't.status != "rejected"';
 			$statuses = array_filter( $statuses, lambda( '$x', '$x != "untranslated"' ) );
 		}
-		
+
 		$statuses = array_filter( $statuses, lambda( '$s', 'in_array($s, $statuses)', array( 'statuses' => $this->get_static( 'statuses' ) ) ) );
 		if ( $statuses ) {
 			$statuses_where = array();
@@ -145,7 +154,9 @@ class GP_Translation extends GP_Thing {
 		}
 
 		$sql_sort = sprintf( $sort_by, $sort_how );
-		$limit = $this->sql_limit_for_paging( $page );
+
+		$limit = $this->sql_limit_for_paging( $page, $this->per_page );
+
 		$sql_for_translations = "
 			SELECT SQL_CALC_FOUND_ROWS t.*, o.*, t.id as id, o.id as original_id, t.status as translation_status, o.status as original_status, t.date_added as translation_added, o.date_added as original_added
 		    FROM $gpdb->originals as o
@@ -157,9 +168,12 @@ class GP_Translation extends GP_Thing {
 		foreach( (array)$rows as $row ) {
 			if ( $row->user_id && $this->per_page != 'no-limit' ) {
 				$user = GP::$user->get( $row->user_id );
-				if ( $user ) $row->user_login = $user->user_login;
+				if ( $user ) {
+					$row->user_login = $user->user_login;
+					$row->user_display_name = $user->display_name;
+				}
 			} else {
-				$row->user_login = '';
+				$row->user_login = $row->user_display_name = '';
 			}
 			$row->translations = array();
 			for( $i = 0; $i < $locale->nplurals; $i++ ) {

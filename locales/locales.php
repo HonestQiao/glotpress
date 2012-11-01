@@ -511,6 +511,17 @@ class GP_Locales {
 		$es_cl->slug = 'es-cl';
 		$es_cl->google_code = 'es';
 		$es_cl->facebook_locale = 'es_LA';
+		
+		$es_mx = new GP_Locale(); 
+		$es_mx->english_name = 'Spanish (Mexico)'; 
+		$es_mx->native_name = 'Español de México'; 
+		$es_mx->lang_code_iso_639_1 = 'es'; 
+		$es_mx->lang_code_iso_639_2 = 'spa'; 
+		$es_mx->country_code = 'mx'; 
+		$es_mx->wp_locale = 'es_MX'; 
+		$es_mx->slug = 'es-mx'; 
+		$es_mx->google_code = 'es'; 
+		$es_mx->facebook_locale = 'es_LA';
 
 		$es_pe = new GP_Locale();
 		$es_pe->english_name = 'Spanish (Peru)';
@@ -1551,7 +1562,7 @@ class GP_Locales {
 		$tg->google_code = 'tg';
 		$tg->nplurals = 2;
 		$tg->plural_expression = 'n != 1;';
-		
+
 		$th = new GP_Locale();
 		$th->english_name = 'Thai';
 		$th->native_name = 'ไทย';
@@ -1702,7 +1713,7 @@ class GP_Locales {
 		$yi->slug = 'yi';
 		$yi->google_code = 'yi';
 		$yi->rtl = true;
-		
+
 		$yo = new GP_Locale();
 		$yo->english_name = 'Yorùbá';
 		$yo->native_name = 'èdè Yorùbá';
